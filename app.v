@@ -2,10 +2,7 @@ module main
 
 import vweb
 import rand
-
-const (
-	port = 8082
-)
+import os
 
 struct App {
 	vweb.Context
@@ -19,8 +16,10 @@ mut:
 }
 
 fn main() {
-	println('vweb example')
-	vweb.run(&App{}, port)
+	mut app := &App{}
+	port := os.getenv('PORT').int()
+	app.handle_static('assets', true)
+	vweb.run(app, if port > 0 { port } else { 8082 })
 }
 
 ['/users/:user']
