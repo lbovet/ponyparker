@@ -1,55 +1,71 @@
 module main
 
+import domain { Event, BidEvent, CancelEvent, UserState, user_state, Storage, FileStorage }
+import time { now }
 import vweb
-import rand
 import os
 
 struct App {
 	vweb.Context
-mut:
-	state shared State
-}
-
-struct State {
-mut:
-	cnt int
+	mut:
+		storage FileStorage
+		user_id string
 }
 
 fn main() {
-	mut app := &App{}
+	mut app := &App{storage: FileStorage{}}
+	app.storage.init()
 	port := os.getenv('PORT').int()
-	app.handle_static('assets', true)
+	app.handle_static('static', true)
 	vweb.run(app, if port > 0 { port } else { 8082 })
 }
 
-['/users/:user']
-pub fn (mut app App) user_endpoint(user string) vweb.Result {
-	id := rand.intn(100) or { 0 }
-	return app.json({
-		user: id
-	})
-}
-
 pub fn (mut app App) index() vweb.Result {
-	lock app.state {
-		app.state.cnt++
+	return app.file("static/index.html")
+}
+
+fn (mut app App) auth() bool {
+	token := app.get_header('Authorization').after_char(` `)
+	user_id := app.storage.read_user(token).user_id
+	if user_id != '' {
+		app.user_id = user_id
+		return true
+	} else {
+		// TODO: check and save user
+		app.user_id = ''
+		app.set_status(401, "401 Not Authorized")
+		return false
 	}
-	show := true
-	hello := 'Hello world from vweb'
-	numbers := [1, 2, 3]
-	return $vweb.html()
+	return false
 }
 
-pub fn (mut app App) show_text() vweb.Result {
-	return app.text('Hello world from vweb')
-}
-
-pub fn (mut app App) cookie() vweb.Result {
-	app.set_cookie(name: 'cookie', value: 'test')
-	return app.text('Response Headers\n$app.header')
+['/state']
+pub fn (mut app App) state() vweb.Result {
+	if app.user_id != '' || app.auth() {
+		return app.json(user_state(app.user_id, app.storage.read_events(), now()))
+	} else {
+		return app.text("401 Not Authorized")
+	}
 }
 
 [post]
-pub fn (mut app App) post() vweb.Result {
-	return app.text('Post body: $app.req.data')
+['/bid']
+pub fn (mut app App) bid() vweb.Result {
+	if app.auth() {
+		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id })
+		return app.state()
+	} else {
+		return app.text("401 Not Authorized")
+	}
+}
+
+[delete]
+['/bid']
+pub fn (mut app App) cancel() vweb.Result {
+	if app.auth() {
+		app.storage.add_event(CancelEvent{ timestamp: now(), user_id: app.user_id })
+		return app.state()
+	} else {
+		return app.text("401 Not Authorized")
+	}
 }

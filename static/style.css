@@ -1,0 +1,154 @@
+html, body {
+    height: 100%;
+    user-select: none;
+    background-color: #c3adbf;
+    transition: background-color 0.4s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol" !important;
+}
+
+.container {
+    height: 100%;
+}
+
+#logo {
+    max-width: 70%;
+    max-height: 64px;
+}
+
+.navbar {
+    background-color: #9e7f97;
+    transition: background-color 0.7s;
+}
+
+.title {
+    margin-top: 64px
+}
+
+h5 {
+    margin-top: 20px;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: 24px;
+    height: 40px;
+}
+
+h6 {
+    margin-top: 40px;
+    font-size: 20px;
+    height: 40px;
+}
+
+h2 {
+    display: none;
+    padding-top: 20px;
+    font-size: 160px;
+    height: 228px;
+    font-family: 'Noto Emoji'
+}
+
+.main-button {
+    border: none;
+    color: white;
+    background-color: #c3adbf;
+    border-radius: 6px;
+    padding: 32px;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    margin: 64px;
+    width: 200px;
+    height: 100px;
+}
+
+.main-button:active {
+    color: #dddddd;
+    box-shadow: 0 0 5px 0 inset #000000aa;
+}
+
+.main-button:focus {
+    outline: none;
+}
+
+
+.status-empty-background {
+    background-color: #c3adbf;
+}
+
+.status-empty-control {
+    background-color: #9e7f97;
+}
+
+.status-empty-text {
+    color: #9e7f97;
+}
+
+.status-confirmable-control:active {
+    background-color: #5fa49c;
+}
+
+.status-confirmable-control:disabled {
+    background-color: #5fa49c;
+}
+
+.status-placeable-control:active {
+    background-color: #e49528;
+}
+
+.status-placeable-control:disabled {
+    background-color: #e49528;
+}
+
+
+.status-confirmed-background {
+    background-color: #8dc6bf;
+}
+
+.status-confirmed-control {
+    background-color: #5fa49c;
+}
+
+.status-confirmed-text {
+    color: #5fa49c;
+}
+
+.status-confirmed-control:active {
+    background-color: #e65526;
+}
+
+.status-confirmed-control:disabled {
+    background-color: #e65526;
+}
+
+
+.status-placed-background {
+    background-color: #fcbc66ff;
+}
+
+.status-placed-control {
+    background-color: #e49528;
+}
+
+.status-placed-control:active {
+    background-color: #e65526;
+}
+
+.status-placed-control:disabled {
+    background-color: #e65526;
+}
+
+
+.status-refused-background {
+    background-color: #f97b4fff;
+}
+
+.status-refused-control {
+    background-color: #e65526;
+}
+
+.status-refused-text {
+    color: #e65526;
+}
+
+button.status-refused-control {
+    opacity: 0;
+}
