@@ -1,4 +1,5 @@
-var token;
+var token = '';
+var r = Math.round(Math.random()*100);
 $(document).ready(function(){
     hash = location.hash.substring(1) || "";
     if(hash.indexOf("code=") == 0) {
@@ -12,32 +13,36 @@ $(document).ready(function(){
                     localStorage.setItem("token", sha256(token));
                 }
                 location.hash = "";
+                console.log("redirect [" + hash + "] "+r)
                 setup();
             }).catch(error => {
                 console.error(error);
             });
     } else {
-        token = hash
+        console.log("direct ["+hash+"] "+r)
         if(hash && hash != "#") {
+            token = hash
             localStorage.setItem("token", token);
+        } else {
+            token = localStorage.getItem("token");
         }
         location.hash = "";
         setup();
     }
 });
 
+var waitTimer;
+
 function setup() {
     $.ajaxSetup({
         beforeSend: function (xhr) {
-            xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            if(token) {
+                xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+            }
         }
     });
     var state = {};
-    var waitTimer;
     waitTimer = wait(waitTimer);
-    $.get("/state").then(response => {
-        update(state, response, waitTimer)
-    }, auth);
     $("#action").click(function() {
         $("#action").prop("disabled", true);
         waitTimer = wait(waitTimer);
@@ -67,9 +72,9 @@ function setup() {
         $("main").toggle();
         $("#user-page").toggle();
     })
-    $("#logout-button").click(signOut);
     $("#reset-button").click(function() {
         localStorage.removeItem("token");
+        localStorage.setItem("reset", true);
         waitTimer = wait(waitTimer);
         $.ajax("/token", { type: "DELETE" }).then(response => {
             update(state, response, waitTimer)
@@ -78,21 +83,31 @@ function setup() {
     $("#copy-button").click(function() {
         navigator.clipboard.writeText(url);
     });
-    $(window).focus(function () {
-        if ($("main").is(":visible")) {
-            waitTimer = wait(waitTimer);
-            var updating = false;
-            setTimeout(() => {
-                if(!updating){
-                    reset();
-                }
-            }, 200);
-            $.get("/state").then(response => {
-                updating = true;
-                update(state, response, waitTimer);
-            }, auth);
-        }
-    })
+    setTimeout(function() {
+        $(window).focus(function () {
+            if ($("main").is(":visible")) {
+                waitTimer = wait(waitTimer);
+                var updating = false;
+                setTimeout(() => {
+                    if(!updating){
+                        reset();
+                    }
+                }, 200);
+                $.get("/state").then(response => {
+                    updating = true;
+                    update(state, response, waitTimer);
+                }, auth);
+            }
+        })
+    }, 2000);
+    if(localStorage.getItem("reset")) {
+        localStorage.removeItem("reset")
+        $("#user").click();
+    } else {
+        $.get("/state").then(response => {
+            update(state, response, waitTimer)
+        }, auth);
+    }
 };
 
 function updateTexts(day, action, status, message) {
@@ -194,6 +209,12 @@ function update(state, response, waitTimer) {
 
 function auth(error) {
     if(error.status == 401) {
+        console.log("auth error "+r)
         signIn();
+    }
+    if(error.status == 403) {
+        clearInterval(waitTimer);
+        reset();
+        $("#smiley").text("⛔");
     }
 }

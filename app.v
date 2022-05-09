@@ -27,18 +27,28 @@ pub fn (mut app App) index() vweb.Result {
 }
 
 fn (mut app App) auth() bool {
-	token := app.get_header('Authorization').after_char(` `)
+	authorization := app.get_header('Authorization')
+	token := authorization.all_after("Bearer").trim_space()
+	if authorization == '' || token == '' {
+		app.set_status(401, "Not Authorized")
+		return false
+	}
 	mut user := app.storage.resolve_user(token) or { User{} }
 	if user.user_id != '' {
 		app.user_id = user.user_id
 	} else {
-		user = auth.fetch_profile(token) or {
-			app.user_id = ''
-			app.set_status(401, "401 Not Authorized")
+		if token.len == 64 {
+			app.set_status(403, "Forbidden")
 			return false
+		} else {
+			user = auth.fetch_profile(token) or {
+				app.user_id = ''
+				app.set_status(403, "Forbidden")
+				return false
+			}
+			app.user_id = user.user_id
+			app.storage.create_user(sha256.hexhash(token), user) or { return true }
 		}
-		app.user_id = user.user_id
-		app.storage.create_user(sha256.hexhash(token), user) or { return false }
 	}
 	return true
 }
@@ -47,10 +57,10 @@ fn (mut app App) auth() bool {
 pub fn (mut app App) state() vweb.Result {
 	if app.user_id != '' || app.auth() {
 		user_state := user_state(app.user_id, app.storage.read_events() or { return app.server_error(1)}, now())
-		winner := app.storage.read_user(user_state.winner) or { return app.server_error(1) }
+		winner := app.storage.read_user(user_state.winner) or { User{display_name: ''} }
 		return app.json(UserState{user_state.relative_rank, user_state.reservation_state, winner.display_name})
 	} else {
-		return app.text("401 Not Authorized")
+		return app.text("Authentication failed")
 	}
 }
 

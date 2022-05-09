@@ -2,6 +2,7 @@ import auth
 
 import os
 import io
+import crypto.sha256
 
 fn test_user_profile() {
 	if os.exists("token.txt") {

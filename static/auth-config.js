@@ -7,7 +7,7 @@ const msalConfig = {
     auth: {
         clientId: "c85c5f4b-5600-4e19-b3fa-5106e44150d4",
         authority: "https://login.microsoftonline.com/common",
-        redirectUri: "https://ponyparker.herokuapp.com/",
+        redirectUri: "https://ponyparker.herokuapp.com/"
     },
     cache: {
         cacheLocation: "sessionStorage", // This configures where your cache will be stored
@@ -53,6 +53,10 @@ const loginRequest = {
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/resources-and-scopes.md
  */
 const tokenRequest = {
-    scopes: ["User.Read", "Mail.Read"],
+    scopes: ["User.Read"],
     forceRefresh: false // Set this to "true" to skip a cached token and go to the server to get a new token
+};
+
+const graphConfig = {
+    graphMeEndpoint: "https://graph.microsoft.com/me"
 };

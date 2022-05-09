@@ -4,7 +4,6 @@ import domain { Event, User, Storage }
 import pg
 import os
 import json
-import crypto.sha256
 
 const (
 	max_event_count = 200
@@ -33,8 +32,9 @@ pub fn (mut s PostgresStorage) create_user(token string, user User) ? {
 	defer {
 		db.close()
 	}
-	db.exec_param_many("insert into users (creation_time, user_id, token, display_name) values (current_timestamp, $1, $2, $3)",
-		 [ user.user_id, sha256.hexhash(token), user.display_name ]) ?
+	db.exec_param2("insert into users (creation_time, user_id, display_name) values (current_timestamp, $1, $2)",
+		 user.user_id, user.display_name ) or { }
+	db.exec_param2("update users set token = $2 where user_id = $1 and token is null", user.user_id, token) or { }
 }
 
 pub fn (mut s PostgresStorage) resolve_user(token string) ?User {
@@ -63,8 +63,12 @@ pub fn (mut s PostgresStorage) read_user(user_id string) ?User {
 	}
 }
 
-pub fn (mut s PostgresStorage) reset_token(token string) ? {
-
+pub fn (mut s PostgresStorage) reset_token(user_id string) ? {
+	mut db := setup() ?
+	defer {
+		db.close()
+	}
+	db.exec_param("update users set token = null where user_id = $1", user_id) ?
 }
 
 pub fn (mut s PostgresStorage) add_event(event Event) ? {
