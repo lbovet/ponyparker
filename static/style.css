@@ -17,7 +17,6 @@ html, body {
 
 .navbar {
     background-color: #9e7f97;
-    transition: background-color 0.7s;
 }
 
 .title {
@@ -46,26 +45,55 @@ h2 {
     font-family: 'Noto Emoji'
 }
 
-.main-button {
+#user {
+    font-size: 24px;
+    font-family: 'Noto Emoji';
+    color: white;
+    opacity: 0.4;
+}
+
+#user:active {
+    opacity: 1;
+}
+
+#user-page {display: none}
+
+button {
     border: none;
     color: white;
     background-color: #c3adbf;
+    text-decoration: none;
     border-radius: 6px;
+    padding: 12px;
+    width: 200px;
+}
+
+#qrcode {
+    width: 300px;
+    margin-top: 140px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.tool {
+    margin: 18px;
+    background-color: #9e7f97;
+}
+
+.main-button {
     padding: 32px;
     font-size: 24px;
     font-weight: bold;
-    text-decoration: none;
     margin: 64px;
-    width: 200px;
     height: 100px;
 }
 
-.main-button:active {
+button:active {
     color: #dddddd;
     box-shadow: 0 0 5px 0 inset #000000aa;
 }
 
-.main-button:focus {
+button:focus {
     outline: none;
 }
 
@@ -82,7 +110,7 @@ h2 {
     color: #9e7f97;
 }
 
-.status-confirmable-control:active {
+button.status-confirmable-control:active {
     background-color: #5fa49c;
 }
 
@@ -90,7 +118,7 @@ h2 {
     background-color: #5fa49c;
 }
 
-.status-placeable-control:active {
+button.status-placeable-control:active {
     background-color: #e49528;
 }
 
@@ -111,7 +139,7 @@ h2 {
     color: #5fa49c;
 }
 
-.status-confirmed-control:active {
+button.status-confirmed-control:active {
     background-color: #e65526;
 }
 

@@ -18,7 +18,7 @@ myMSALObj.handleRedirectPromise()
 function selectAccount () {
 
     /**
-     * See here for more info on account retrieval: 
+     * See here for more info on account retrieval:
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-common/docs/Accounts.md
      */
 
@@ -71,7 +71,7 @@ function signOut() {
 
 function getTokenRedirect(request) {
     /**
-     * See here for more info on account retrieval: 
+     * See here for more info on account retrieval:
      * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-common/docs/Accounts.md
      */
     request.account = myMSALObj.getAccountByUsername(username);
@@ -83,7 +83,7 @@ function getTokenRedirect(request) {
                 // fallback to interaction when silent call fails
                 return myMSALObj.acquireTokenRedirect(request);
             } else {
-                console.warn(error);   
+                console.warn(error);
             }
         });
 }
@@ -91,7 +91,7 @@ function getTokenRedirect(request) {
 function seeProfile() {
     getTokenRedirect(loginRequest)
         .then(response => {
-            callMSGraph(graphConfig.graphMeEndpoint, response.accessToken, updateUI);
+            callMSGraph(graphConfig.graphMeEndpoint, response.accessToken, console.log);
         }).catch(error => {
             console.error(error);
         });

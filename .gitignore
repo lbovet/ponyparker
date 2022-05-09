@@ -7,7 +7,7 @@ ponyparker
 *.dylib
 *.dll
 vls.log
-db.txt
+*.txt
 *.c
 app
 ponyparker

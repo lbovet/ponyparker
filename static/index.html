@@ -28,6 +28,7 @@
     <!-- Fixed navbar -->
     <nav class="navbar navbar-expand-md navbar-dark fixed-top">
       <img id="logo" src="logo.svg">
+      <div id="user" class="ml-auto p-2">👤</div>
     </nav>
   </header>
 
@@ -44,6 +45,17 @@
       </div>
   </main>
 
+  <div id="user-page" class="container-fluid">
+    <div class="w-100 h-100 d-table">
+      <div class="d-table-cell align-middle text-center">
+          <div id="qrcode"></div><br>
+          <button id="logout-button" class="tool">Déconnexion</button>
+          <button id="reset-button" class="tool">Nouveau code</button>
+          <button id="copy-button" class="tool">Copier l'adresse</button>
+      </div>
+    </div>
+  </main>
+
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
@@ -52,9 +64,13 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
     crossorigin="anonymous"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/emn178/js-sha256/build/sha256.min.js"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
   <script type="text/javascript" src="./authConfig.js"></script>
   <script type="text/javascript" src="./graphConfig.js"></script>
+
   <script type="text/javascript" src="./index.js"></script>
 
   <script type="text/javascript" src="./authRedirect.js"></script>

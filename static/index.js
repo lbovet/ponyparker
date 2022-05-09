@@ -1,7 +1,32 @@
-
-
+var token;
 $(document).ready(function(){
-    token = Math.round(Math.random() * 10);
+    hash = location.hash.substring(1) || "";
+    if(hash.indexOf("code=") == 0) {
+        getTokenRedirect(loginRequest)
+            .then(response => {
+                storedToken = localStorage.getItem("token");
+                if(token) {
+                    token = storedToken;
+                } else {
+                    token = response.accessToken;
+                    localStorage.setItem("token", sha256(token));
+                }
+                location.hash = "";
+                setup();
+            }).catch(error => {
+                console.error(error);
+            });
+    } else {
+        token = hash
+        if(hash && hash != "#") {
+            localStorage.setItem("token", token);
+        }
+        location.hash = "";
+        setup();
+    }
+});
+
+function setup() {
     $.ajaxSetup({
         beforeSend: function (xhr) {
             xhr.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -27,14 +52,35 @@ $(document).ready(function(){
             }, auth);
         }
     })
-    $(window).focus(function () {
-        waitTimer = wait(waitTimer);
-        reset();
-        $.get("/state").then(response => {
-            update(state, response, waitTimer)
-        }, auth);
+    $("#user").click(function() {
+        if($("main").is(":visible")) {
+            updateColors("empty");
+        } else {
+            waitTimer = wait(waitTimer);
+            $.get("/state").then(response => {
+                update(state, response, waitTimer)
+            }, auth);
+        }
+        generateCode();
+        $("main").toggle();
+        $("#user-page").toggle();
     })
-});
+    $(window).focus(function () {
+        if ($("main").is(":visible")) {
+            waitTimer = wait(waitTimer);
+            var updating = false;
+            setTimeout(() => {
+                if(!updating){
+                    reset();
+                }
+            }, 200);
+            $.get("/state").then(response => {
+                updating = true;
+                update(state, response, waitTimer);
+            }, auth);
+        }
+    })
+};
 
 function updateTexts(day, action, status, message) {
     $("#day").text(day);
@@ -43,15 +89,29 @@ function updateTexts(day, action, status, message) {
     $("#message").text(message);
 }
 
-var waitSequence = ["🤨", "🤔", "🥴", "🥵"];
-
 function reset() {
     updateColors("empty");
     updateTexts("", "", "", "");
-    $("#action").hide();
-    $("#smiley").text("");
-    $("#smiley").show()
-    $("#action").prop("disabled", true);
+    $("#action").hide().prop("disabled", true);
+    $("#smiley").text("").show()
+}
+
+const waitSequence = ["🤨", "🤔", "🥴", "🥵"];
+
+var url;
+
+function generateCode() {
+    if(!url) {
+        url = "https://ponyparker.herokuapp.com/#" + localStorage.getItem("token")
+        new QRCode(document.getElementById("qrcode"), {
+            text: url,
+            width: 300,
+            height: 300,
+            colorDark: "#000000",
+            colorLight: "#ffffff00",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    }
 }
 
 function wait(waitTimer) {
@@ -88,7 +148,6 @@ function update(state, response, waitTimer) {
     $("#action").prop("disabled", false).show();
     day = new Date().getHours() < 14 ? "Aujourd'hui" : "Demain"
     $("#smiley").hide()
-    console.log(response)
     switch (response.reservation_state) {
         case 0:
             state.status = "confirmable";
@@ -122,6 +181,7 @@ function update(state, response, waitTimer) {
 
 function auth(error) {
     if(error.status == 401) {
+        localStorage.removeItem("token");
         signIn();
     }
 }

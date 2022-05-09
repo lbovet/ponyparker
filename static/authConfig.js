@@ -7,7 +7,7 @@ const msalConfig = {
     auth: {
         clientId: "c85c5f4b-5600-4e19-b3fa-5106e44150d4",
         authority: "https://login.microsoftonline.com/common",
-        redirectUri: "https://ponyparker.herokuapp.com/loggedin.html",
+        redirectUri: "https://ponyparker.herokuapp.com/",
     },
     cache: {
         cacheLocation: "sessionStorage", // This configures where your cache will be stored

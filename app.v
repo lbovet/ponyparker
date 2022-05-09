@@ -1,9 +1,11 @@
 module main
 
-import domain { Event, BidEvent, CancelEvent, UserState, user_state, Storage, FileStorage }
+import domain { Event, BidEvent, CancelEvent, UserState, user_state, User, Storage, FileStorage }
+import auth
 import time { now }
 import vweb
 import os
+import crypto.sha256
 
 struct App {
 	vweb.Context
@@ -14,7 +16,7 @@ struct App {
 
 fn main() {
 	mut app := &App{storage: FileStorage{}}
-	app.storage.init()
+	//app.storage.init()
 	port := os.getenv('PORT').int()
 	app.handle_static('static', true)
 	vweb.run(app, if port > 0 { port } else { 8082 })
@@ -26,23 +28,27 @@ pub fn (mut app App) index() vweb.Result {
 
 fn (mut app App) auth() bool {
 	token := app.get_header('Authorization').after_char(` `)
-	user_id := app.storage.read_user(token).user_id
-	if user_id != '' {
-		app.user_id = user_id
-		return true
+	mut user := app.storage.resolve_user(token) or { User{} }
+	if user.user_id != '' {
+		app.user_id = user.user_id
 	} else {
-		// TODO: check and save user
-		app.user_id = ''
-		app.set_status(401, "401 Not Authorized")
-		return false
+		user = auth.fetch_profile(token) or {
+			app.user_id = ''
+			app.set_status(401, "401 Not Authorized")
+			return false
+		}
+		app.user_id = user.user_id
+		app.storage.create_user(sha256.hexhash(token), user) or { return false }
 	}
-	return false
+	return true
 }
 
 ['/state']
 pub fn (mut app App) state() vweb.Result {
 	if app.user_id != '' || app.auth() {
-		return app.json(user_state(app.user_id, app.storage.read_events(), now()))
+		user_state := user_state(app.user_id, app.storage.read_events() or { []Event{} }, now())
+		winner := app.storage.read_user(user_state.winner) or { return app.server_error(1) }
+		return app.json(UserState{user_state.relative_rank, user_state.reservation_state, winner.display_name})
 	} else {
 		return app.text("401 Not Authorized")
 	}
@@ -52,7 +58,7 @@ pub fn (mut app App) state() vweb.Result {
 ['/bid']
 pub fn (mut app App) bid() vweb.Result {
 	if app.auth() {
-		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id })
+		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id }) or { return app.server_error(1) }
 		return app.state()
 	} else {
 		return app.text("401 Not Authorized")
@@ -63,9 +69,19 @@ pub fn (mut app App) bid() vweb.Result {
 ['/bid']
 pub fn (mut app App) cancel() vweb.Result {
 	if app.auth() {
-		app.storage.add_event(CancelEvent{ timestamp: now(), user_id: app.user_id })
+		app.storage.add_event(CancelEvent{ timestamp: now(), user_id: app.user_id }) or { return app.server_error(1) }
 		return app.state()
 	} else {
 		return app.text("401 Not Authorized")
 	}
+}
+
+[delete]
+['/token']
+pub fn (mut app App) reset_token() vweb.Result {
+	if app.auth() {
+		app.storage.reset_token(app.user_id) or { return app.server_error(1) }
+	}
+	app.set_status(401, "401 Not Authorized")
+	return app.text("401 Not Authorized")
 }
