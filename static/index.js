@@ -55,9 +55,11 @@ function setup() {
     $("#user").click(function() {
         if($("main").is(":visible")) {
             updateColors("empty");
+            $("#user").text("❌")
         } else {
             waitTimer = wait(waitTimer);
             $.get("/state").then(response => {
+                $("#user").text("👤")
                 update(state, response, waitTimer)
             }, auth);
         }
@@ -65,6 +67,17 @@ function setup() {
         $("main").toggle();
         $("#user-page").toggle();
     })
+    $("#logout-button").click(signOut);
+    $("#reset-button").click(function() {
+        localStorage.removeItem("token");
+        waitTimer = wait(waitTimer);
+        $.ajax("/token", { type: "DELETE" }).then(response => {
+            update(state, response, waitTimer)
+        }, auth);
+    });
+    $("#copy-button").click(function() {
+        navigator.clipboard.writeText(url);
+    });
     $(window).focus(function () {
         if ($("main").is(":visible")) {
             waitTimer = wait(waitTimer);
@@ -181,7 +194,6 @@ function update(state, response, waitTimer) {
 
 function auth(error) {
     if(error.status == 401) {
-        localStorage.removeItem("token");
         signIn();
     }
 }

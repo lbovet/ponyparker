@@ -1,6 +1,7 @@
 module main
 
-import domain { Event, BidEvent, CancelEvent, UserState, user_state, User, Storage, FileStorage }
+import domain { Event, BidEvent, CancelEvent, UserState, user_state, User, Storage }
+import postgres { PostgresStorage }
 import auth
 import time { now }
 import vweb
@@ -10,13 +11,12 @@ import crypto.sha256
 struct App {
 	vweb.Context
 	mut:
-		storage FileStorage
+		storage PostgresStorage
 		user_id string
 }
 
 fn main() {
-	mut app := &App{storage: FileStorage{}}
-	//app.storage.init()
+	mut app := &App{storage: PostgresStorage{}}
 	port := os.getenv('PORT').int()
 	app.handle_static('static', true)
 	vweb.run(app, if port > 0 { port } else { 8082 })
@@ -46,7 +46,7 @@ fn (mut app App) auth() bool {
 ['/state']
 pub fn (mut app App) state() vweb.Result {
 	if app.user_id != '' || app.auth() {
-		user_state := user_state(app.user_id, app.storage.read_events() or { []Event{} }, now())
+		user_state := user_state(app.user_id, app.storage.read_events() or { return app.server_error(1)}, now())
 		winner := app.storage.read_user(user_state.winner) or { return app.server_error(1) }
 		return app.json(UserState{user_state.relative_rank, user_state.reservation_state, winner.display_name})
 	} else {
@@ -58,7 +58,10 @@ pub fn (mut app App) state() vweb.Result {
 ['/bid']
 pub fn (mut app App) bid() vweb.Result {
 	if app.auth() {
-		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id }) or { return app.server_error(1) }
+		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id }) or {
+			println(err)
+			return app.server_error(1)
+		}
 		return app.state()
 	} else {
 		return app.text("401 Not Authorized")

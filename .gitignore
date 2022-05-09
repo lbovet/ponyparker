@@ -8,6 +8,7 @@ ponyparker
 *.dll
 vls.log
 *.txt
+!vpm.txt
 *.c
 app
 ponyparker
