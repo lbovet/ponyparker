@@ -43,7 +43,7 @@ fn (mut app App) auth() bool {
 		} else {
 			user = auth.fetch_profile(token) or {
 				app.user_id = ''
-				app.set_status(403, "Forbidden")
+				app.set_status(401, "Not Authorized")
 				return false
 			}
 			app.user_id = user.user_id

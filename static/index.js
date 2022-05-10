@@ -213,6 +213,7 @@ function auth(error) {
         signIn();
     }
     if(error.status == 403) {
+        localStorage.removeItem("token");
         clearInterval(waitTimer);
         reset();
         $("#smiley").text("⛔");

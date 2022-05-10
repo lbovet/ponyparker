@@ -10,12 +10,11 @@ pub fn after_hour(t Time, hour int) bool {
 }
 
 pub fn before_hour(t Time, hour int) bool {
-	local_time := t.local()
 	mut reference := new_time(Time {
-		day: local_time.day
-		month: local_time.month
-		year: local_time.year
+		day: t.day
+		month: t.month
+		year: t.year
 		hour: hour
 	})
-	return local_time < reference
+	return t < reference
 }
