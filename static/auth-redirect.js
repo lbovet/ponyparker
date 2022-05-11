@@ -2,18 +2,20 @@ const myMSALObj = new msal.PublicClientApplication(msalConfig);
 
 let username = "";
 
-myMSALObj.handleRedirectPromise()
-    .then(handleResponse)
-    .catch((error) => {
-        console.error(error);
-    });
+function processAuth(nextStep) {
+    myMSALObj.handleRedirectPromise()
+        .then(handleResponse)
+        .catch((error) => {
+            console.error(error);
+        })
+        .finally(nextStep);
+}
 
 function selectAccount () {
-
     const currentAccounts = myMSALObj.getAllAccounts();
     if (currentAccounts.length === 0) {
         return;
-    } else if (currentAccounts.length >= 1) {
+    } else {
         username = currentAccounts[0].username;
     }
 }

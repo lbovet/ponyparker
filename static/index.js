@@ -1,34 +1,37 @@
 var token = '';
 var r = Math.round(Math.random()*100);
+
 $(document).ready(function(){
     hash = location.hash.substring(1) || "";
-    if(hash.indexOf("code=") == 0) {
-        getTokenRedirect(loginRequest)
-            .then(response => {
-                storedToken = localStorage.getItem("token");
-                if(token) {
-                    token = storedToken;
-                } else {
-                    token = response.accessToken;
-                    localStorage.setItem("token", sha256(token));
-                }
-                location.hash = "";
-                console.log("redirect [" + hash + "] "+r)
-                setup();
-            }).catch(error => {
-                console.error(error);
-            });
-    } else {
-        console.log("direct ["+hash+"] "+r)
-        if(hash && hash != "#") {
-            token = hash
-            localStorage.setItem("token", token);
+    processAuth(function() {
+        if(hash.indexOf("code=") == 0) {
+            getTokenRedirect(loginRequest)
+                .then(response => {
+                    storedToken = localStorage.getItem("token");
+                    if(token) {
+                        token = storedToken;
+                    } else {
+                        token = response.accessToken;
+                        localStorage.setItem("token", sha256(token));
+                    }
+                    location.hash = "";
+                    console.log("redirect [" + hash + "] "+r)
+                    setup();
+                }).catch(error => {
+                    console.error(error);
+                });
         } else {
-            token = localStorage.getItem("token");
+            console.log("direct ["+hash+"] "+r)
+            if(hash && hash != "#") {
+                token = hash
+                localStorage.setItem("token", token);
+            } else {
+                token = localStorage.getItem("token");
+            }
+            location.hash = "";
+            setup();
         }
-        location.hash = "";
-        setup();
-    }
+    });
 });
 
 var waitTimer;
