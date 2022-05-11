@@ -33,7 +33,11 @@ fn (mut app App) auth() bool {
 		app.set_status(401, "Not Authorized")
 		return false
 	}
-	mut user := app.storage.resolve_user(token) or { User{} }
+	mut user := app.storage.resolve_user(token) or {
+		app.storage.resolve_user(sha256.hexhash(token)) or {
+			User{}
+		}
+	}
 	if user.user_id != '' {
 		app.user_id = user.user_id
 	} else {

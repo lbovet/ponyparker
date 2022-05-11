@@ -7,11 +7,8 @@ $(document).ready(function(){
         if(hash.indexOf("code=") == 0) {
             getTokenRedirect(loginRequest)
                 .then(response => {
-                    storedToken = localStorage.getItem("token");
-                    if(token) {
-                        token = storedToken;
-                    } else {
-                        token = response.accessToken;
+                    token = response.accessToken;
+                    if(!localStorage.getItem("token")) {
                         localStorage.setItem("token", sha256(token));
                     }
                     location.hash = "";
