@@ -74,7 +74,7 @@ function setup() {
     })
     $("#reset-button").click(function() {
         localStorage.removeItem("token");
-        localStorage.setItem("reset", true);
+        localStorage.setItem("reset-token", true);
         waitTimer = wait(waitTimer);
         $.ajax("/token", { type: "DELETE" }).then(response => {
             update(state, response, waitTimer)
@@ -100,8 +100,9 @@ function setup() {
             }
         })
     }, 2000);
-    if(localStorage.getItem("reset")) {
-        localStorage.removeItem("reset")
+    if(localStorage.getItem("reset-token")) {
+        localStorage.removeItem("reset-token")
+        $.get("/state");
         $("#user").click();
     } else {
         $.get("/state").then(response => {
