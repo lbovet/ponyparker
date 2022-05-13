@@ -94,8 +94,10 @@ function setup() {
                     }
                 }, 200);
                 $.get("/state").then(response => {
-                    updating = true;
-                    update(state, response, waitTimer);
+                    if ($("main").is(":visible")) {
+                        updating = true;
+                        update(state, response, waitTimer);
+                    }
                 }, auth);
             }
         })
