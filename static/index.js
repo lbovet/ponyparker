@@ -202,7 +202,7 @@ function update(state, response, waitTimer) {
             break;
         case 4:
             state.status = "refused";
-            updateTexts(day, "XXXXXXX", "Place occupée", "par " + response.winner);
+            updateTexts(day, "XXXXXXX", "Place occupée", response.winner ? "par " + response.winner : "");
             $("#action").hide().prop("disabled", true);
             $("#smiley").text("🙁").show();
             break;
