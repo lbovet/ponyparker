@@ -1,6 +1,6 @@
 module main
 
-import domain { Event, BidEvent, CancelEvent, UserState, user_state, User, Storage }
+import domain { Event, BidEvent, CancelEvent, UserState, user_state, User, Storage, FileStorage }
 import postgres { PostgresStorage }
 import auth
 import time { now }
@@ -11,15 +11,23 @@ import crypto.sha256
 struct App {
 	vweb.Context
 	mut:
-		storage PostgresStorage
+		storage Storage
 		user_id string
 }
 
 fn main() {
-	mut app := &App{storage: PostgresStorage{}}
+	mut app := &App{storage: storage()}
 	port := os.getenv('PORT').int()
 	app.handle_static('static', true)
 	vweb.run(app, if port > 0 { port } else { 8082 })
+}
+
+fn storage() Storage {
+	$if debug {
+		return FileStorage{}
+	} $else {
+		return PostgresStorage{}
+	}
 }
 
 pub fn (mut app App) index() vweb.Result {

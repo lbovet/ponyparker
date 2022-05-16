@@ -6,11 +6,9 @@ import json
 
 pub interface Storage {
 	mut:
-		init() ?
-
 		resolve_user(token string) ?User
 	 	create_user(token string, user User) ?
-		read_user(user_id string) ?
+		read_user(user_id string) ?User
 		reset_token(user_id string) ?
 
 		add_event(e Event) ?
@@ -36,10 +34,6 @@ pub fn (mut s FileStorage) read_user(user_id string) ?User {
 
 pub fn (mut s FileStorage) reset_token(token string) ? {
 
-}
-
-pub fn (mut s FileStorage) init() ? {
-	os.rm(filename) or {}
 }
 
 pub fn (mut s FileStorage) add_event(event Event) ? {

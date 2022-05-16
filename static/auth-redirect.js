@@ -3,6 +3,9 @@ const myMSALObj = new msal.PublicClientApplication(msalConfig);
 let username = "";
 
 function processAuth(nextStep) {
+    if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+        return nextStep();
+    }
     myMSALObj.handleRedirectPromise()
         .then(handleResponse)
         .catch((error) => {
