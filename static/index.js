@@ -175,39 +175,70 @@ function updateStatusClass(element, className) {
 }
 
 function update(state, response, waitTimer) {
-    clearInterval(waitTimer)
-    $("#action").prop("disabled", false).show();
-    day = new Date().getHours() < 14 ? "Aujourd'hui" : "Demain"
-    $("#smiley").hide()
-    switch (response.reservation_state) {
-        case 0:
-            state.status = "confirmable";
-            updateTexts(day, "Réserver", "", "");
-            break;
-        case 1:
-            state.status = "placeable";
-            updateTexts(day, "Demander", "", "");
-            break;
-        case 2:
-            state.status = "placed";
-            updateTexts(day, "Annuler", "Réservation demandée", "");
-            break;
-        case 3:
-            state.status = "confirmed";
-            updateTexts(day, "Annuler", "Réservation confirmée", "pour " + response.winner);
-            if (new Date().getHours() < 14 || new Date().getHours() >= 20) {
-                $("#action").hide().prop("disabled", true);
-                $("#smiley").text("🙂").show()
-            }
-            break;
-        case 4:
+    updateLock(function(lockReason) {
+        console.log(lockReason)
+        clearInterval(waitTimer)
+        $("#action").prop("disabled", false).show();
+        day = new Date().getHours() < 14 ? "Aujourd'hui" : "Demain"
+        $("#smiley").hide()
+        if (lockReason) {
             state.status = "refused";
-            updateTexts(day, "XXXXXXX", "Place occupée", response.winner ? "par " + response.winner : "");
+            updateTexts(day, "XXXXXXX", "Place bloquée", lockReason);
             $("#action").hide().prop("disabled", true);
-            $("#smiley").text("🙁").show();
-            break;
+            $("#smiley").text("🚫").show();
+        } else {
+            switch (response.reservation_state) {
+                case 0:
+                    state.status = "confirmable";
+                    updateTexts(day, "Réserver", "", "");
+                    break;
+                case 1:
+                    state.status = "placeable";
+                    updateTexts(day, "Demander", "", "");
+                    break;
+                case 2:
+                    state.status = "placed";
+                    updateTexts(day, "Annuler", "Réservation demandée", "");
+                    break;
+                case 3:
+                    state.status = "confirmed";
+                    updateTexts(day, "Annuler", "Réservation confirmée", "pour " + response.winner);
+                    if (new Date().getHours() < 14 || new Date().getHours() >= 20) {
+                        $("#action").hide().prop("disabled", true);
+                        $("#smiley").text("🙂").show()
+                    }
+                    break;
+                case 4:
+                    state.status = "refused";
+                    updateTexts(day, "XXXXXXX", "Place occupée", response.winner ? "par " + response.winner : "");
+                    $("#action").hide().prop("disabled", true);
+                    $("#smiley").text("🙁").show();
+                    break;
+                }
+        }
+        updateColors(state.status);
+    });
+}
+
+var lockUpdated = null;
+var lockReason = null;
+
+function updateLock(nextStep) {
+    if (lockUpdated == null || lockUpdated < new Date().getTime() - 5 * 60 * 1000) {
+        $.get("/locks.ics").then(response => {
+            var plannedDay = new Date(new Date().getTime()+(24-14)*3600*1000).toDateString();
+            lockReason =
+                Object.values(ical.parseICS(response))
+                    .filter(ev => ev.type == "VEVENT")
+                    .filter(ev => ev.start.toDateString() == plannedDay)
+                    .map(ev => ev.summary)
+                    .shift()
+            lockUpdated = new Date().getTime()
+            nextStep(lockReason)
+        }, auth);
+    } else {
+        nextStep(lockReason)
     }
-    updateColors(state.status)
 }
 
 function auth(error) {
