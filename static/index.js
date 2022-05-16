@@ -31,6 +31,7 @@ $(document).ready(function(){
     });
 });
 
+var state = {};
 var waitTimer;
 
 function setup() {
@@ -41,11 +42,10 @@ function setup() {
             }
         }
     });
-    var state = {};
-    waitTimer = wait(waitTimer);
+    waitTimer = wait();
     $("#action").click(function() {
         $("#action").prop("disabled", true);
-        waitTimer = wait(waitTimer);
+        waitTimer = wait();
         if (state.status == "confirmable" || state.status == "placeable") {
             $.post("/bid").then(response => {
                 update(state, response, waitTimer)
@@ -62,7 +62,7 @@ function setup() {
             updateColors("empty");
             $("#user").text("❌")
         } else {
-            waitTimer = wait(waitTimer);
+            waitTimer = wait();
             $.get("/state").then(response => {
                 $("#user").text("👤")
                 update(state, response, waitTimer)
@@ -75,7 +75,7 @@ function setup() {
     $("#reset-button").click(function() {
         localStorage.removeItem("token");
         localStorage.setItem("reset-token", true);
-        waitTimer = wait(waitTimer);
+        waitTimer = wait();
         $.ajax("/token", { type: "DELETE" }).then(response => {
             update(state, response, waitTimer)
         }, auth);
@@ -86,7 +86,7 @@ function setup() {
     setTimeout(function() {
         $(window).focus(function () {
             if ($("main").is(":visible")) {
-                waitTimer = wait(waitTimer);
+                waitTimer = wait();
                 var updating = false;
                 setTimeout(() => {
                     if(!updating){
@@ -145,13 +145,18 @@ function generateCode() {
     }
 }
 
-function wait(waitTimer) {
+function wait() {
     var i = 0;
     clearInterval(waitTimer)
     return setInterval(function() {
         reset();
-        i = (i + 1) % waitSequence.length;
-        $("#smiley").text(waitSequence[i])
+        if(++i == waitSequence.length) {
+            $.get("/state").then(response => {
+                update(state, response, waitTimer)
+            }, auth);
+        }
+        i = i % waitSequence.length;
+        $("#smiley").text(waitSequence[i]);
     }, 2000);
 }
 
@@ -176,7 +181,6 @@ function updateStatusClass(element, className) {
 
 function update(state, response, waitTimer) {
     updateLock(function(lockReason) {
-        console.log(lockReason)
         clearInterval(waitTimer)
         $("#action").prop("disabled", false).show();
         day = new Date().getHours() < 14 ? "Aujourd'hui" : "Demain"

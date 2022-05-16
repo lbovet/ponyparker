@@ -13,7 +13,7 @@ const (
 pub struct PostgresStorage {
 }
 
-pub fn setup() ?pg.DB {
+pub fn setup() pg.DB {
 	url := os.getenv('DATABASE_URL')
 	conn_spec := url.all_after("postgres://").all_before_last("/")
 	host_spec := conn_spec.all_after("@")
@@ -25,21 +25,21 @@ pub fn setup() ?pg.DB {
 		user: user_spec.all_before(":")
 		password: user_spec.all_after(":")
 		dbname: url.all_after_last("/")
-	})
+	}) or { panic("Cannot connect to database.") }
 }
 
 pub fn (mut s PostgresStorage) create_user(token string, user User) ? {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
 	db.exec_param2("insert into users (creation_time, user_id, display_name) values (current_timestamp, $1, $2)",
-		 user.user_id, user.display_name ) or { }
-	db.exec_param2("update users set token = $2 where user_id = $1 and token is null", user.user_id, sha256.hexhash(token)) or { }
+		 user.user_id, user.display_name ) ?
+	db.exec_param2("update users set token = $2 where user_id = $1 and token is null", user.user_id, sha256.hexhash(token)) ?
 }
 
 pub fn (mut s PostgresStorage) resolve_user(token string) ?User {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
@@ -52,7 +52,7 @@ pub fn (mut s PostgresStorage) resolve_user(token string) ?User {
 }
 
 pub fn (mut s PostgresStorage) read_user(user_id string) ?User {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
@@ -65,7 +65,7 @@ pub fn (mut s PostgresStorage) read_user(user_id string) ?User {
 }
 
 pub fn (mut s PostgresStorage) reset_token(user_id string) ? {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
@@ -73,7 +73,7 @@ pub fn (mut s PostgresStorage) reset_token(user_id string) ? {
 }
 
 pub fn (mut s PostgresStorage) add_event(event Event) ? {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
@@ -81,7 +81,7 @@ pub fn (mut s PostgresStorage) add_event(event Event) ? {
 }
 
 pub fn (mut s PostgresStorage) read_events() ?[]Event {
-	mut db := setup() ?
+	mut db := setup()
 	defer {
 		db.close()
 	}
