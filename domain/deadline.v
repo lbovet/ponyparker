@@ -18,3 +18,9 @@ pub fn before_hour(t Time, hour int) bool {
 	})
 	return t < reference
 }
+
+pub fn within_time_span(timestamp Time, start int, end int) bool {
+	return
+		after_hour(timestamp, start) &&
+		before_hour(timestamp, end)
+}

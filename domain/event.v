@@ -17,12 +17,6 @@ pub struct CancelEvent {
 
 pub type Event = BidEvent | CancelEvent
 
-pub fn (event BaseEvent) within_bid_time(start int, end int) bool {
-	return
-		after_hour(event.timestamp, start) &&
-		before_hour(event.timestamp, end)
-}
-
 fn group_by_day(events []Event, switch_hour int) [][]Event  {
 	mut last_key := ''
 	mut result := [][]Event{}

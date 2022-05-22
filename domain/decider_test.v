@@ -99,6 +99,30 @@ fn test_cancel_restores_rank() {
 	assert user_state("paul", events, make_time(4, 17)).reservation_state == ReservationState.refused
 }
 
+fn test_placed_wins() {
+	mut events := []Event{}
+	events << BidEvent{ timestamp: make_time(1, 15), user_id: "john" }
+	events << BidEvent{ timestamp: make_time(2, 15), user_id: "john" }
+	events << BidEvent{ timestamp: make_time(3, 15), user_id: "paul" }
+	events << BidEvent{ timestamp: make_time(4, 15), user_id: "john" }
+	assert user_state("john", events, make_time(4, 16)).reservation_state == ReservationState.placed
+	assert user_state("paul", events, make_time(4, 16)).reservation_state == ReservationState.confirmable
+	assert user_state("john", events, make_time(4, 21)).reservation_state == ReservationState.confirmed
+	assert user_state("paul", events, make_time(4, 21)).reservation_state == ReservationState.refused
+}
+
+fn test_placed_confirmed_day_after() {
+	mut events := []Event{}
+	events << BidEvent{ timestamp: make_time(1, 15), user_id: "john" }
+	events << BidEvent{ timestamp: make_time(2, 15), user_id: "john" }
+	events << BidEvent{ timestamp: make_time(3, 15), user_id: "paul" }
+	events << BidEvent{ timestamp: make_time(4, 15), user_id: "john" }
+	assert user_state("john", events, make_time(4, 16)).reservation_state == ReservationState.placed
+	assert user_state("paul", events, make_time(4, 16)).reservation_state == ReservationState.confirmable
+	assert user_state("john", events, make_time(5, 8)).reservation_state == ReservationState.confirmed
+	assert user_state("paul", events, make_time(5, 8)).reservation_state == ReservationState.refused
+}
+
 fn test_cancel_placed() {
 	mut events := []Event{}
 	events << BidEvent{ timestamp: make_time(1, 15), user_id: "john" }

@@ -23,7 +23,7 @@ pub fn user_state(user_id string, events []Event, query_time Time) UserState {
 						reservation_state = ReservationState.confirmed
 						winner = candidates.first()
 					} else {
-						if before_hour(query_time, bid_deadline) {
+						if within_time_span(query_time, day_switch_hour, bid_deadline) {
 							reservation_state = ReservationState.placed
 						} else {
 							reservation_state = ReservationState.confirmed
@@ -31,7 +31,7 @@ pub fn user_state(user_id string, events []Event, query_time Time) UserState {
 						}
 					}
 				} else {
-					if before_hour(query_time, bid_deadline) {
+					if within_time_span(query_time, day_switch_hour, bid_deadline) {
 						if rank < relative_rank(candidates.first(), user_ranks) {
 							if rank == 0 {
 								reservation_state = ReservationState.confirmable
@@ -50,7 +50,7 @@ pub fn user_state(user_id string, events []Event, query_time Time) UserState {
 			} else {
 				increase_rank(candidates.first(), mut user_ranks)
 				rank = relative_rank(user_id, user_ranks)
-				if rank == 0 || after_hour(query_time, bid_deadline) {
+				if rank == 0 || !within_time_span(query_time, day_switch_hour, bid_deadline) {
 					reservation_state = ReservationState.confirmable
 				} else {
 					reservation_state = ReservationState.placeable
@@ -82,7 +82,7 @@ fn compute_candidates(day_events []Event, user_ranks map[string]int) List<string
 				BidEvent {
 					if !candidates.empty() &&
 						user_ranks[user_id] < user_ranks[candidates.first()] &&
-						event.within_bid_time(day_switch_hour, bid_deadline)
+						within_time_span(event.timestamp, day_switch_hour, bid_deadline)
 					{
 						candidates.prepend(user_id)
 					} else {
@@ -90,7 +90,7 @@ fn compute_candidates(day_events []Event, user_ranks map[string]int) List<string
 					}
 				}
 				CancelEvent {
-					if event.within_bid_time(day_switch_hour, bid_deadline) {
+					if within_time_span(event.timestamp, day_switch_hour, bid_deadline) {
 						candidates.remove(user_id)
 					} else {
 						candidates
