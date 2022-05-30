@@ -115,7 +115,11 @@ fn compute_summary(day_events []Event, user_ranks map[string]int) Summary {
 						if !summary.candidates.empty() && summary.candidates.first() == user_id {
 							Summary{List<string>{}, summary.late_cancellers.append(user_id)}
 						} else {
-							Summary{summary.candidates, summary.late_cancellers.append(user_id)}
+							if !summary.late_cancellers.contains(user_id) {
+								Summary{summary.candidates, summary.late_cancellers.append(user_id)}
+							} else {
+								Summary{summary.candidates, summary.late_cancellers}
+							}
 						}
 					}
 				}

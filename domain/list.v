@@ -18,6 +18,17 @@ fn (a List<T>) append(s T) List<T> {
 	return List<T> { r }
 }
 
+fn (a List<T>) contains(s T) bool {
+	mut result := false
+	for item in a.data {
+		if item == s {
+			result = true
+			break
+		}
+	}
+	return result
+}
+
 fn (a List<T>) remove(s T) List<T> {
 	return List<T> { a.data.filter(it != s) }
 }
