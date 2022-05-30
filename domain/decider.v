@@ -112,7 +112,7 @@ fn compute_summary(day_events []Event, user_ranks map[string]int) Summary {
 					if within_time_span(event.timestamp, day_switch_hour, bid_deadline) {
 						Summary{summary.candidates.remove(user_id), summary.late_cancellers}
 					} else {
-						if summary.candidates.first() == user_id {
+						if !summary.candidates.empty() && summary.candidates.first() == user_id {
 							Summary{List<string>{}, summary.late_cancellers.append(user_id)}
 						} else {
 							Summary{summary.candidates, summary.late_cancellers.append(user_id)}
