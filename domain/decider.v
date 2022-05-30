@@ -8,13 +8,20 @@ const (
 	bid_deadline = 20
 )
 
+struct Summary {
+	candidates List<string>
+	late_cancellers List<string>
+}
+
 pub fn user_state(user_id string, events []Event, query_time Time) UserState {
 	mut user_ranks := map[string]int{}
 	mut reservation_state := ReservationState.confirmable
 	mut rank := 0
 	mut winner := ''
 	for day in group_by_day(events, day_switch_hour) {
-		mut candidates := compute_candidates(day, user_ranks)
+		mut summary := compute_summary(day, user_ranks)
+		mut candidates := summary.candidates
+		mut late_cancellers := summary.late_cancellers
 		rank = relative_rank(user_id, user_ranks)
 		if !candidates.empty() {
 			if planning_day(day[0].BaseEvent.timestamp, day_switch_hour) == planning_day(query_time, day_switch_hour) {
@@ -56,6 +63,18 @@ pub fn user_state(user_id string, events []Event, query_time Time) UserState {
 					reservation_state = ReservationState.placeable
 				}
 			}
+		} else {
+			if planning_day(day[0].BaseEvent.timestamp, day_switch_hour) != planning_day(query_time, day_switch_hour) {
+				for late_canceller in late_cancellers.to_array() {
+					increase_rank(late_canceller, mut user_ranks)
+				}
+				rank = relative_rank(user_id, user_ranks)
+				if rank == 0 || !within_time_span(query_time, day_switch_hour, bid_deadline) {
+					reservation_state = ReservationState.confirmable
+				} else {
+					reservation_state = ReservationState.placeable
+				}
+			}
 		}
 	}
 	return UserState{ relative_rank: rank, reservation_state: reservation_state, winner: winner}
@@ -74,26 +93,30 @@ fn increase_rank(user_id string, mut user_ranks map[string]int) {
 	user_ranks[user_id] += 1
 }
 
-fn compute_candidates(day_events []Event, user_ranks map[string]int) List<string> {
-	return arrays.fold(day_events, List<string>{},
-		fn [user_ranks] (candidates List<string>, event Event) List<string> {
+fn compute_summary(day_events []Event, user_ranks map[string]int) Summary {
+	return arrays.fold(day_events, Summary{List<string>{}, List<string>{}},
+		fn [user_ranks] (summary Summary, event Event) Summary {
 			user_id := event.user_id
 			return match event {
 				BidEvent {
-					if !candidates.empty() &&
-						user_ranks[user_id] < user_ranks[candidates.first()] &&
+					if !summary.candidates.empty() &&
+						user_ranks[user_id] < user_ranks[summary.candidates.first()] &&
 						within_time_span(event.timestamp, day_switch_hour, bid_deadline)
 					{
-						candidates.prepend(user_id)
+						Summary{summary.candidates.prepend(user_id), summary.late_cancellers}
 					} else {
-						candidates.append(user_id)
+						Summary{summary.candidates.append(user_id), summary.late_cancellers}
 					}
 				}
 				CancelEvent {
 					if within_time_span(event.timestamp, day_switch_hour, bid_deadline) {
-						candidates.remove(user_id)
+						Summary{summary.candidates.remove(user_id), summary.late_cancellers}
 					} else {
-						candidates
+						if summary.candidates.first() == user_id {
+							Summary{List<string>{}, summary.late_cancellers.append(user_id)}
+						} else {
+							Summary{summary.candidates, summary.late_cancellers.append(user_id)}
+						}
 					}
 				}
 			}

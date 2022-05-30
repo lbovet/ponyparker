@@ -157,7 +157,7 @@ fn test_cancel_confirmed() {
 	assert user_state("paul", events, make_time(4, 21)).reservation_state == ReservationState.refused
 }
 
-fn test_no_cancel_after_bid_time() {
+fn test_cancel_after_bid_time() {
 	mut events := []Event{}
 	events << BidEvent{ timestamp: make_time(1, 15), user_id: "john" }
 	events << BidEvent{ timestamp: make_time(2, 15), user_id: "john" }
@@ -169,16 +169,20 @@ fn test_no_cancel_after_bid_time() {
 	assert user_state("paul", events, make_time(4, 18)).reservation_state == ReservationState.confirmed
 	assert user_state("john", events, make_time(4, 18)).reservation_state == ReservationState.refused
 	events << CancelEvent{ timestamp: make_time(4, 21), user_id: "paul" }
-	assert user_state("paul", events, make_time(4, 22)).reservation_state == ReservationState.confirmed
-	assert user_state("john", events, make_time(4, 22)).reservation_state == ReservationState.refused
+	assert user_state("paul", events, make_time(4, 22)).reservation_state == ReservationState.confirmable
+	assert user_state("john", events, make_time(4, 22)).reservation_state == ReservationState.confirmable
 }
 
-fn test_cancel_after_bid_time_keeps_rank() {
+fn test_cancel_after_bid_time_increase_rank() {
 	mut events := []Event{}
-	events << BidEvent{ timestamp: make_time(1, 15), user_id: "john" }
+	events << BidEvent{ timestamp: make_time(1, 15), user_id: "paul" }
 	events << BidEvent{ timestamp: make_time(2, 15), user_id: "john" }
-	events << CancelEvent{ timestamp: make_time(2, 22), user_id: "john" }
-	events << BidEvent{ timestamp: make_time(3, 15), user_id: "paul" }
-	assert user_state("john", events, make_time(4, 16)).reservation_state == ReservationState.placeable
-	assert user_state("paul", events, make_time(4, 16)).reservation_state == ReservationState.confirmable
+	events << BidEvent{ timestamp: make_time(3, 15), user_id: "john" }
+	assert user_state("john", events, make_time(3, 21)).reservation_state == ReservationState.confirmed
+	assert user_state("paul", events, make_time(3, 21)).reservation_state == ReservationState.refused
+	events << CancelEvent{ timestamp: make_time(3, 22), user_id: "john" }
+	assert user_state("john", events, make_time(3, 23)).reservation_state == ReservationState.confirmable
+	assert user_state("paul", events, make_time(3, 23)).reservation_state == ReservationState.confirmable
+	assert user_state("john", events, make_time(5, 16)).reservation_state == ReservationState.placeable
+	assert user_state("paul", events, make_time(5, 16)).reservation_state == ReservationState.confirmable
 }

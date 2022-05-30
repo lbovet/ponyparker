@@ -207,10 +207,6 @@ function update(state, response, waitTimer) {
                 case 3:
                     state.status = "confirmed";
                     updateTexts(day, "Annuler", "Réservation confirmée", "pour " + response.winner);
-                    if (new Date().getHours() < 14 || new Date().getHours() >= 20) {
-                        $("#action").hide().prop("disabled", true);
-                        $("#smiley").text("🙂").show()
-                    }
                     break;
                 case 4:
                     state.status = "refused";

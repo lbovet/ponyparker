@@ -82,7 +82,6 @@ pub fn (mut app App) state() vweb.Result {
 pub fn (mut app App) bid() vweb.Result {
 	if app.auth() {
 		app.storage.add_event(BidEvent{ timestamp: now(), user_id: app.user_id }) or {
-			println(err)
 			return app.server_error(1)
 		}
 		return app.state()

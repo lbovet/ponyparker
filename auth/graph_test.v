@@ -10,7 +10,6 @@ fn test_user_profile() {
 		defer { f.close() }
 		mut r := io.new_buffered_reader(reader: f)
 		token := r.read_line() or { panic(err) }
-		println(token)
 		user := auth.fetch_profile(token) or { panic(err) }
 		assert user.user_id.starts_with("laurent.bovet")
 		assert user.display_name == "Laurent Bovet"
