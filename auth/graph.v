@@ -16,7 +16,7 @@ pub fn fetch_profile(token string) ?User {
 	request.add_header(CommonHeader.authorization, "Bearer " + token)
 	response := request.do() or { return error('cannot perform request') }
 	if response.status_code == 200 {
-		text := response.text
+		text := response.body
 			.replace("userPrincipalName", "username")
 			.replace("givenName", "given_name")
 		profile := json.decode(Profile, text) or { return error('cannot parse') }

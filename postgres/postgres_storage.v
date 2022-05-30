@@ -1,6 +1,6 @@
 module postgres
 
-import domain { Event, User, Storage }
+import domain { Event, NoneEvent, User, Storage }
 import pg
 import os
 import json
@@ -89,5 +89,5 @@ pub fn (mut s PostgresStorage) read_events() ?[]Event {
 		"select * from
 			(select json, insert_order from events order by insert_order desc limit 200)
 			as events order by insert_order asc;") ?
-	return results.map(fn (row pg.Row) Event { return json.decode(Event, row.vals[0]) })
+	return results.map(fn (row pg.Row) Event { return json.decode(Event, row.vals[0]) or { NoneEvent{}}  })
 }

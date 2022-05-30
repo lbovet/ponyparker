@@ -119,6 +119,9 @@ fn compute_summary(day_events []Event, user_ranks map[string]int) Summary {
 						}
 					}
 				}
+				else {
+					Summary{summary.candidates, summary.late_cancellers}
+				}
 			}
 		})
 }

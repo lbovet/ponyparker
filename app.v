@@ -117,7 +117,7 @@ pub fn (mut app App) get_locks() ?vweb.Result {
 	response := request.do() or { return app.server_error(4) }
 	if response.status_code == 200 {
 		app.set_content_type("text/calendar")
-		return app.ok(response.text)
+		return app.ok(response.body)
 	} else {
 		return error('cannot get calendar')
 	}

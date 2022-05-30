@@ -15,7 +15,11 @@ pub struct CancelEvent {
 	BaseEvent
 }
 
-pub type Event = BidEvent | CancelEvent
+pub struct NoneEvent {
+	BaseEvent
+}
+
+pub type Event = BidEvent | CancelEvent | NoneEvent
 
 fn group_by_day(events []Event, switch_hour int) [][]Event  {
 	mut last_key := ''
