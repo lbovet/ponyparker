@@ -56,11 +56,11 @@ fn (mut app App) auth() bool {
 		} else {
 			user = auth.fetch_profile(token) or {
 				app.user_id = ''
-				app.set_status(401, "Not Authorized")
+				app.set_status(401, "Authentication Failed")
 				return false
 			}
 			app.user_id = user.user_id
-			app.storage.create_user(sha256.hexhash(token), user) or { return true }
+			app.storage.create_user(sha256.hexhash(token), user) or { return false }
 		}
 	}
 	return true
@@ -106,9 +106,11 @@ pub fn (mut app App) cancel() vweb.Result {
 pub fn (mut app App) reset_token() vweb.Result {
 	if app.auth() {
 		app.storage.reset_token(app.user_id) or { return app.server_error(1) }
+		app.set_status(418, "401 Token Reset")
+	} else {
+		app.set_status(401, "401 Token Reset")
 	}
-	app.set_status(401, "401 Not Authorized")
-	return app.text("401 Not Authorized")
+	return app.text("401 Token Reset")
 }
 
 ['/locks.ics']

@@ -34,7 +34,7 @@ pub fn (mut s PostgresStorage) create_user(token string, user User) ? {
 		db.close()
 	}
 	db.exec_param2("insert into users (creation_time, user_id, display_name) values (current_timestamp, $1, $2)",
-		 user.user_id, user.display_name ) ?
+		 user.user_id, user.display_name ) or {}
 	db.exec_param2("update users set token = $2 where user_id = $1 and token is null", user.user_id, sha256.hexhash(token)) ?
 }
 

@@ -8,9 +8,6 @@ $(document).ready(function(){
             getTokenRedirect(loginRequest)
                 .then(response => {
                     token = response.accessToken;
-                    if(!localStorage.getItem("token")) {
-                        localStorage.setItem("token", sha256(token));
-                    }
                     location.hash = "";
                     console.log("redirect [" + hash + "] "+r)
                     setup();
@@ -58,6 +55,7 @@ function setup() {
         }
     })
     $("#user").click(function() {
+        clearInterval(waitTimer)
         if($("main").is(":visible")) {
             updateColors("empty");
             $("#user").text("❌")
@@ -68,7 +66,11 @@ function setup() {
                 update(state, response, waitTimer)
             }, auth);
         }
-        generateCode();
+        if(localStorage.getItem("reset-token")) {
+            generateCode();
+            localStorage.removeItem("reset-token")
+            $("#copy-button").prop("disabled", false);
+        }
         $("main").toggle();
         $("#user-page").toggle();
     })
@@ -103,7 +105,6 @@ function setup() {
         })
     }, 2000);
     if(localStorage.getItem("reset-token")) {
-        localStorage.removeItem("reset-token")
         $.get("/state");
         $("#user").click();
     } else {
@@ -133,7 +134,7 @@ var url;
 
 function generateCode() {
     if(!url) {
-        url = "https://ponyparker.herokuapp.com/#" + localStorage.getItem("token")
+        url = "https://ponyparker.herokuapp.com/#" + sha256(token)
         new QRCode(document.getElementById("qrcode"), {
             text: url,
             width: 300,
@@ -242,7 +243,7 @@ function updateLock(nextStep) {
 }
 
 function auth(error) {
-    if(error.status == 401) {
+    if(error.status == 401 || error.status == 418) {
         console.log("auth error "+r)
         signIn();
     }
