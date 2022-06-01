@@ -45,7 +45,7 @@ pub fn (mut s PostgresStorage) resolve_user(token string) ?User {
 	}
 	rows := db.exec_param("select user_id, display_name from users where token = $1", sha256.hexhash(token)) ?
 	if rows.len > 0  {
-		return User{rows[0].vals[0], rows[0].vals[1]}
+		return User{rows[0].vals[0], short_name(rows[0].vals[1])}
 	} else {
 		return error("not found")
 	}
@@ -58,7 +58,7 @@ pub fn (mut s PostgresStorage) read_user(user_id string) ?User {
 	}
 	rows := db.exec_param("select user_id, display_name from users where user_id = $1", user_id) ?
 	if rows.len > 0  {
-		return User{rows[0].vals[0], rows[0].vals[1]}
+		return User{rows[0].vals[0], short_name(rows[0].vals[1])}
 	} else {
 		return error("not found")
 	}
@@ -90,4 +90,8 @@ pub fn (mut s PostgresStorage) read_events() ?[]Event {
 			(select json, insert_order from events order by insert_order desc limit 200)
 			as events order by insert_order asc;") ?
 	return results.map(fn (row pg.Row) Event { return json.decode(Event, row.vals[0]) or { NoneEvent{}}  })
+}
+
+fn short_name(full_name string) string {
+	return full_name.fields()[0]+" "+full_name.fields()#[-1..][0]
 }
