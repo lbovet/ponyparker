@@ -45,14 +45,30 @@ h2 {
     font-family: 'Noto Emoji'
 }
 
-#user {
-    font-size: 24px;
-    font-family: 'Noto Emoji';
+a {
     color: white;
     opacity: 0.4;
 }
 
-#user:active {
+a:hover, a:active {
+    text-decoration: none;
+    color: white;
+    opacity: 1;
+}
+
+.top-tool {
+    display: none;
+    cursor: pointer;
+    font-size: 24px;
+    font-family: 'Noto Emoji';
+    color: white;
+}
+
+.top-tool span {
+    opacity: 0.4;
+}
+
+.top-tool span:hover, .top-tool span:active {
     opacity: 1;
 }
 
