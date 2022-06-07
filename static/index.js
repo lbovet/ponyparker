@@ -222,7 +222,7 @@ function update(state, response, waitTimer) {
                     state.status = "refused";
                     updateTexts(day, "XXXXXXX", "Place occupée", response.winner ? "par " + response.winner : "");
                     $("#action").hide().prop("disabled", true);
-                    $("#smiley").text("🙁").show();
+                    $("#smiley").text("🚘").show();
                     break;
                 }
         }
