@@ -9,10 +9,12 @@ Une toute petite application pour réserver la place de parking devant le bureau
 - Réservation pour le jour-même jusqu'à 14h
 - Réservation pour le lendemain dès 14h
 - Priorité à ceux qui l'ont réservée le moins de fois
-- Premier venu, permier servi en cas d'égalité
+- Premier venu, premier servi en cas d'égalité
 - Réservation annulable sans pénalité jusqu'à 20h
 - Attribution définitive pour le lendemain à 20h
 - Pénalité de priorité en cas d'annulation après 20h
+- Pas de réservation le week-end et les jours fériés
+- Bloquage possible à l'avance pour les visites par notre secrétariat
 
 ## Fonctionnement
 
