@@ -11,8 +11,8 @@ struct Profile {
 	surname string
 }
 
-pub fn fetch_profile(token string) ?User {
-	mut request := new_request(Method.get, "https://graph.microsoft.com/v1.0/me", '') or { return error('cannot create request') }
+pub fn fetch_profile(token string) !User {
+	mut request := new_request(Method.get, "https://graph.microsoft.com/v1.0/me", '')
 	request.add_header(CommonHeader.authorization, "Bearer " + token)
 	response := request.do() or { return error('cannot perform request') }
 	if response.status_code == 200 {

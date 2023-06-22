@@ -114,8 +114,8 @@ pub fn (mut app App) reset_token() vweb.Result {
 }
 
 ['/locks.ics']
-pub fn (mut app App) get_locks() ?vweb.Result {
-	mut request := new_request(Method.get, os.getenv("LOCK_CALENDAR"), '') or { return app.server_error(3) }
+pub fn (mut app App) get_locks() !vweb.Result {
+	mut request := new_request(Method.get, os.getenv("LOCK_CALENDAR"), '')
 	response := request.do() or { return app.server_error(4) }
 	if response.status_code == 200 {
 		app.set_content_type("text/calendar")

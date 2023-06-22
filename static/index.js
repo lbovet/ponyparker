@@ -201,25 +201,21 @@ function update(state, response, waitTimer) {
             $("#action").hide().prop("disabled", true);
             $("#smiley").text("🚫").show();
         } else {
+            state.status = response.reservation_state;
             switch (response.reservation_state) {
-                case 0:
-                    state.status = "confirmable";
+                case "confirmable":
                     updateTexts(day, "Réserver", "", "");
                     break;
-                case 1:
-                    state.status = "placeable";
+                case "placeable":
                     updateTexts(day, "Demander", "", "");
                     break;
-                case 2:
-                    state.status = "placed";
+                case "placed":
                     updateTexts(day, "Annuler", "Réservation demandée", "");
                     break;
-                case 3:
-                    state.status = "confirmed";
+                case "confirmed":
                     updateTexts(day, "Annuler", "Réservation confirmée", "pour " + response.winner);
                     break;
-                case 4:
-                    state.status = "refused";
+                case "refused":
                     updateTexts(day, "XXXXXXX", "Place occupée", response.winner ? "par " + response.winner : "");
                     $("#action").hide().prop("disabled", true);
                     $("#smiley").text("🚘").show();
